@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 773aca452b65383408730a372c658889
+timeCreated: 1535563483
+licenseType: Pro
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Stoehr numbers
+  fontNames:
+  - Stoehr numbers
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
