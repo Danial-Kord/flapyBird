@@ -34,3 +34,14 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+/Logs
+/obj
+/Temp
+/Assembly-CSharp.csproj
+/Assembly-CSharp-Editor.csproj
+/flapyBird.sln
+/UnityNative.Sharing.csproj
+/UnityNative.Sharing.Editor.csproj
+/UnityNative.Sharing.Example.csproj
+/.idea
+/Library
