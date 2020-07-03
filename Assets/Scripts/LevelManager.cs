@@ -6,20 +6,25 @@ using UnityEngine.SceneManagement;
 //using UnityNative.Sharing;
 
 
-public class LevelManager : MonoSingleton<LevelManager> {
+public class LevelManager : MonoBehaviour {
 	
 	//private  IUnityNativeSharing unityNativeSharing;
 	public static int choosenIndex = 0;
 	[SerializeField] private GameObject[] Birds;
 	public void startPlay()
 	{
+		resetLevel();
+	}
+
+	public static void resetLevel()
+	{
 		SceneManager.LoadScene ("main");
 		Time.timeScale = 1;
 	}
 
-	protected override void OnAwake()
+
+	private void Awake()
 	{
-		//unityNativeSharing = UnityNativeSharing.Create();
 		if (SceneManager.GetActiveScene().name.Equals("main"))
 		{
 			Birds[choosenIndex].SetActive(true);
@@ -65,6 +70,21 @@ public class LevelManager : MonoSingleton<LevelManager> {
 	public void Exit(){
 		Application.Quit();
 	}
+
+
+
+	public void OnVideoRequest()
+	{
+		Birds[choosenIndex].GetComponent<Bird>().playRewardVideo();
+	}
+	
+	
+	public void resetScene()
+	{
+		Birds[choosenIndex].GetComponent<Bird>().OnresetingGame();
+	}
+
+	
 	/*
 	public void Update(){
 		if (Input.GetKeyDown (KeyCode.Escape)) {

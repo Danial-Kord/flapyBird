@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using TapsellSDK;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -44,6 +45,8 @@ public class Bird : MonoBehaviour {
 	private float timePassed = 0;
 	[Range(0,19)]
 	[SerializeField] int  wingingSpeed = 15;
+
+	
 	// Use this for initialization
 	void Start ()
 	{
@@ -73,7 +76,7 @@ public class Bird : MonoBehaviour {
 		PlayerPrefs.SetInt("timePlays",timePlays);
 	}
 
-	private IEnumerator tapOnScreen()
+	private IEnumerator tapOnScreen(Action onComplete = null)
 	{
 
 		Time.timeScale = 0;
@@ -87,6 +90,7 @@ public class Bird : MonoBehaviour {
 			{
 				if (Input.touches[0].phase == TouchPhase.Began)
 				{
+					Time.timeScale = 1;
 					rb.velocity = Vector2.zero;
 					rb.AddForce (force);
 					clicked = true;
@@ -96,6 +100,7 @@ public class Bird : MonoBehaviour {
 					resetSprites();
 					sounds.wing ();
 					check = false;
+					break;
 				}
 			}
 
@@ -104,9 +109,10 @@ public class Bird : MonoBehaviour {
 			tap.transform.Rotate(delta,0,0);
 			yield return null;
 		}
-		Time.timeScale = 1;
 		tapIcon.SetActive(false);
 		tap.SetActive(false);
+		
+		onComplete?.Invoke();
 	}
 	
 	// Update is called once per frame
@@ -188,33 +194,71 @@ public class Bird : MonoBehaviour {
 	}
 	private void resetLife()
 	{
-	 	reSpawinig = StartCoroutine(reSpawning());
+		transform.position = firstPos;
+		transform.rotation = Quaternion.identity;
+		GetComponent<Collider2D>().isTrigger = true;
+		gameOver = false;
+	 	reSpawinig = StartCoroutine(tapOnScreen(()=> { StartCoroutine(reSpawning()); }));
 	}
 
 	private IEnumerator reSpawning()
 	{
-		Time.timeScale = 0;
-		transform.position = firstPos;
-		transform.rotation = Quaternion.identity;
-		rb.angularVelocity = 0;
-		rb.isKinematic = true;
+		Time.timeScale = 1;
+
 		
+		
+		//rb.angularVelocity = 0;
+		//rb.isKinematic = true;
+
+		
+		GetComponent<Collider2D>().isTrigger = true;
 		reSpawn.gameObject.SetActive(true);
-		float time = 5;
-		
-		while (time > 0)
+		float time = 5.99f;
+
+		float a = 0.89f;
+		float delta = -0.015f;
+
+		while ((int)time >= 0)
 		{
+
+			Color target = goldBirds[index].GetComponent<SpriteRenderer>().material.color;
+			target.a = a;
+
+			goldBirds[index].GetComponent<SpriteRenderer>().material.color = target;
+			
 			reSpawn.text = "" + (int)time;
+
 			yield return null;
-			time -= Time.unscaledDeltaTime;
+			a += delta;
+			if (a >= 0.9f || a <= 0.15f)
+				delta = -delta;
+			
+			time -= Time.deltaTime;
 		}
 		reSpawn.gameObject.SetActive(false);
-		gameOver = false;
 
-		rb.isKinematic = false;
-		Time.timeScale = 1;
+
+		foreach (var t in goldBirds)
+		{
+			Color target = t.GetComponent<SpriteRenderer>().material.color;
+			target.a = 1;
+			t.GetComponent<SpriteRenderer>().material.color = target;
+		}
+		
+		GetComponent<Collider2D>().isTrigger = false;
+
+
+		if (transform.position.y < 6.5f)
+		{
+			GameOver();
+		}
+		else
+		{
+			gameOver = false;
+		}
+		
+		
 		reSpawinig = null;
-		StartCoroutine(tapOnScreen());
 	}
 	
 	
@@ -225,10 +269,10 @@ public class Bird : MonoBehaviour {
 		sounds.point();
 	}
 
-	private void onFinishingAd(bool f)
+	private void onFinishingAd(TapsellAdFinishedResult f = null)
 	{
 		Time.timeScale = 1;
-		LevelManager.Instance.startPlay();
+		LevelManager.resetLevel();
 	}
 	private void playFastBanner()
 	{
@@ -237,11 +281,11 @@ public class Bird : MonoBehaviour {
 	}
 	
 
-	public void onFinishingRewardVideo(bool completed)
+	private void onFinishingRewardVideo(TapsellAdFinishedResult completed)
 	{
 		if(reSpawinig != null)
 			return;
-		if (completed)
+		if (completed.completed)
 		{
 			resetLife();
 		}
@@ -333,7 +377,7 @@ public class Bird : MonoBehaviour {
 				lostNumbers--;
 			}
 		}
-		onFinishingAd(true);
+		onFinishingAd();
 	}
 
 	

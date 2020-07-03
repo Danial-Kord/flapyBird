@@ -4,12 +4,11 @@ using UnityEngine;
 
 public class GameOver : MonoBehaviour {
 	// Use this for initialization
-	Bird bird;
+
 	bool flagLose =false;
 	Sound sounds;
 	void Start () {
-		bird = GameObject.FindGameObjectWithTag ("Bird").GetComponent<Bird>();
-		
+
 		sounds = GameObject.FindGameObjectWithTag ("Audio").GetComponent<Sound> ();
 	}
 	
@@ -17,7 +16,7 @@ public class GameOver : MonoBehaviour {
 		if(!flagLose)
 		if (col.gameObject.tag.Equals ("Bird")) {
 			//disableColliders ();
-			bird.GameOver ();
+			GameObject.FindGameObjectWithTag ("Bird").GetComponent<Bird>().GameOver ();
 			
 			flagLose = true;
 			sounds.hit ();

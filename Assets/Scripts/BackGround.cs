@@ -77,7 +77,7 @@ public class BackGround : MonoBehaviour {
 				  }
 			}
 
-			speed -= 0.03f;
+			speed -= 0.015f;
 			lastScore = int.Parse (score.text);
 		}
 	}

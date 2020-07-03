@@ -18,9 +18,9 @@ public class MovableMile : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void FixedUpdate () {
+	void Update () {
 		
-		if (Bird.getGameOver ()) {
+		if (Bird.getGameOver () || Time.deltaTime == 0){
 			return;
 		}
 		/*

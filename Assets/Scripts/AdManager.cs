@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TapsellPlusSDK;
+using TapsellSDK;
 
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -37,11 +37,12 @@ public class AdManager : MonoSingleton<AdManager>
     public static Action<TapsellPlusFinishedResult> onRewardAction; //classes that need to do in action time should subscribe
     public static Action<TapsellPlus> onAdAvailableAction; //classes that need to do in action time should subscribe
     public static Action onAnyErrorAdAction;
-    
+     */
     private TapsellShowOptions defaultOption;
-    */
-//    public TapsellPlus tapsellFastBanner = null;
-//    public TapsellPlus tapselRewardVideo = null;
+   
+    public TapsellAd tapsellFastBanner = null;
+    public TapsellAd tapselRewardVideo = null;
+
     public bool tapsellFastBannerAvailable = false;
     public bool tapselRewardVideoAvailable = false;
 
@@ -58,14 +59,14 @@ public class AdManager : MonoSingleton<AdManager>
 
     protected override void initialization()
     {
-        /*
+        
         defaultOption = new TapsellShowOptions();
         defaultOption.backDisabled = false;
         defaultOption.immersiveMode = false;
         defaultOption.rotationMode = TapsellShowOptions.ROTATION_UNLOCKED;
         defaultOption.showDialog = true;
-        */
-        TapsellPlus.initialize(TAPSELL_KEY);
+        
+        Tapsell.Initialize(TAPSELL_KEY);
         /*
         onAdAvailableAction += OnAdAvailable;
         onErrorAction += OnAdError;
@@ -93,6 +94,7 @@ public class AdManager : MonoSingleton<AdManager>
     }
     */
 
+    /*
     private void OnResponse(String zoneId)
     {
         if (zoneId.Equals(CHOSEN_Ad_FastBanner))
@@ -106,6 +108,22 @@ public class AdManager : MonoSingleton<AdManager>
             tapselRewardVideoAvailable = true;
         }
     }
+    */
+
+    private void OnAdAvailable(TapsellAd tapsellAd)
+    {
+        if (tapsellAd.zoneId.Equals(CHOSEN_Ad_FastBanner))
+        {
+              tapsellFastBanner = tapsellAd;
+            tapsellFastBannerAvailable = true;
+        }
+        else if(tapsellAd.zoneId.Equals(CHOSEN_Ad_RewardVideo))
+        {
+             tapselRewardVideo = tapsellAd;
+            tapselRewardVideoAvailable = true;
+        }
+    }
+    
     private void OnAnyErrorAd()
     {
       //  tapsellFastBanner = null;
@@ -115,61 +133,62 @@ public class AdManager : MonoSingleton<AdManager>
     {
         if (zoneId == null)
         {
-           // tapsellFastBanner = null;
-           // tapselRewardVideo = null;
+            tapsellFastBanner = null;
+            tapselRewardVideo = null;
             tapselRewardVideoAvailable = false;
             tapsellFastBannerAvailable = false;
-            Invoke("requestNewFastBannerAd",0.1f);
-            Invoke("requestNewRewardVideo",0.3f);
+            Invoke("requestNewFastBannerAd",1f);
+            Invoke("requestNewRewardVideo",1.5f);
             return;
 
         }
         if (CHOSEN_Ad_FastBanner.Equals(zoneId))
         {
-            //tapsellFastBanner = null;
+            tapsellFastBanner = null;
             tapsellFastBannerAvailable = false;
-            Invoke("requestNewFastBannerAd",0.1f);
+            Invoke("requestNewFastBannerAd",0.5f);
 
         }
         else if(CHOSEN_Ad_RewardVideo.Equals(zoneId))
         {
             tapselRewardVideoAvailable = false;
-           // tapselRewardVideo = null;
-           Invoke("requestNewFastBannerAd",0.15f);
+            tapselRewardVideo = null;
+           Invoke("requestNewRewardVideo",1f);
         }
         else
         {
             tapselRewardVideoAvailable = false;
             tapsellFastBannerAvailable = false;
-            Invoke("requestNewFastBannerAd",0.1f);
-            Invoke("requestNewFastBannerAd",0.15f);  
+            Invoke("requestNewFastBannerAd",1f);
+            Invoke("requestNewRewardVideo",1.5f);
         }
     }
 
 
-    /*
-    public void playAd(TapsellPlus TapsellPlus,Action<TapsellPlusFinishedResult> onComplete)
+    
+    private void playAd(TapsellAd TapsellPlus,Action<TapsellAdFinishedResult> onComplete)
     {
         
         Tapsell.ShowAd(TapsellPlus, defaultOption);
-        Tapsell.SetRewardListener((TapsellPlusFinishedResult result) =>
+        Tapsell.SetRewardListener((TapsellAdFinishedResult result) =>
         {
             onComplete(result);
             removeIdAndRequestNewOne(result.zoneId);
         });
         
-    }*/
+    }
 
-    public void playRewardVideoAd(Action<bool>onComplete)
+    public void playRewardVideoAd(Action<TapsellAdFinishedResult>onComplete)
     {
 
-        playAd(CHOSEN_Ad_RewardVideo,onComplete);
+        playAd(tapselRewardVideo,onComplete);
     }
     
-    public void playFastBanner(Action<bool>onComplete)
+    public void playFastBanner(Action<TapsellAdFinishedResult>onComplete)
     {
-        playAd(CHOSEN_Ad_FastBanner,onComplete);
+        playAd(tapsellFastBanner,onComplete);
     }
+    /*
     private void playAd(String ZONE_ID,Action<bool>onComplete)
     {
         TapsellPlus.showAd (ZONE_ID,
@@ -193,37 +212,29 @@ public class AdManager : MonoSingleton<AdManager>
         );
         
     }
-    
+    */
     
     private void OnAdError(TapsellError tapsellError)
     {
         removeIdAndRequestNewOne(tapsellError.zoneId);
-       // onAnyErrorAdAction();
     }
-    /*
+
     private void OnNoAdAvailable(string noAdd)
     {
         removeIdAndRequestNewOne(null);
-        onAnyErrorAdAction();
-
     }
-        
-    private void OnExpiring(TapsellPlus TapsellPlus)
+
+    private void OnExpiring(TapsellAd tapsellAd)
     {
-        
-        removeIdAndRequestNewOne(TapsellPlus.zoneId);
-        onAnyErrorAdAction();
+        removeIdAndRequestNewOne(tapsellAd.zoneId);
     }
     
     private void OnNoNetwork(string networkError)
     {
-        
         removeIdAndRequestNewOne(null);
-        onAnyErrorAdAction();
-
     }
     
-    */
+    
     
     private void requestNewFastBannerAd()
     {
@@ -239,12 +250,12 @@ public class AdManager : MonoSingleton<AdManager>
 
     private void requestNewAd(string zoneId,bool isCashed)
     {
-        /*
-        Tapsell.RequestAd(zoneId, isCashed,onAdAvailableAction,
-            onNoAdAvailableAction,onErrorAction,
-            onNoNetworkAction,onExpiringAction);
-            */
-        TapsellPlus.requestRewardedVideo(zoneId, OnResponse, OnAdError);
+        
+        Tapsell.RequestAd(zoneId, isCashed,OnAdAvailable,
+            OnNoAdAvailable,OnAdError,
+            OnNoNetwork,OnExpiring);
+            
+       // TapsellPlus.requestRewardedVideo(zoneId, OnResponse, OnAdError);
     }
     
     
